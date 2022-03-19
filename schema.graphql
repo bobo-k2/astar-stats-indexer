@@ -1,10 +1,23 @@
 type Tvl @entity {
-
-  id: ID! #id is a required field
+  id: ID! #era number
 
   timestamp: BigInt! @index
 
   tvl: BigInt!
 
   tvlUsd: BigInt
+}
+
+type TransactionsPerBlock @entity {
+  id: ID! #date string in format yyyyddmm
+
+  timestamp: BigInt! @index
+
+  firstBlock: Int!
+
+  lastBlock: Int
+
+  numberOfTransactions: Int!
+
+  avgNumberOfTransactions: Float
 }

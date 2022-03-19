@@ -1,31 +1,11 @@
-import {SubstrateEvent} from "@subql/types";
+import {SubstrateEvent, SubstrateBlock} from "@subql/types";
 import { Option, Struct } from '@polkadot/types-codec';
 import { Balance } from '@polkadot/types/interfaces';
 import { u32 } from '@polkadot/types';
-import BN from 'bn.js';
 import { Tvl } from "../types";
+import { getBlockTimestampInUnix, reduceBalanceToDenom } from './utils';
 
 export async function handleNewStakingEraEvent(event: SubstrateEvent): Promise<void> {
-    // const [era, isIndividualClaim] = await Promise.all([
-    //     api.query.dappsStaking.currentEra(),
-    //     checkIsEnableIndividualClaim()
-    // ]);
-    // // const result = isEnableIndividualClaim
-    // //     ? await api.query.dappsStaking.generalEraInfo(era)
-    // //     : await api.query.dappsStaking.eraRewardsAndStakes(era);
-    
-    // let tvl: Balance;
-    // if (isIndividualClaim) {
-
-    // } else {
-    //     const result = await api.query.dappsStaking.eraRewardsAndStakes<Option<EraRewardAndStake>>(era)
-    //     tvl = result.unwrap().staked;
-    // }
-    // const tvlDefaultUnit = Number(ethers.utils.formatUnits(tvl.toString(), 18));
-    // const tvl = isEnableIndividualClaim
-    //     ? result.unwrap().locked
-    //     : result.unwrap().staked.valueOf();
-
     const decimals = api.registry.chainDecimals[0];
     const era = await api.query.dappsStaking.currentEra<u32>();
     const [tvl, priceUsd] = await Promise.all([
@@ -34,12 +14,10 @@ export async function handleNewStakingEraEvent(event: SubstrateEvent): Promise<v
     ])
 
     const record = new Tvl(era.toString());
-    record.timestamp = BigInt(event.block.timestamp.getTime());
+    record.timestamp = getBlockTimestampInUnix(event.block);
     record.tvl =  reduceBalanceToDenom(tvl, decimals);
     record.tvlUsd = record.tvl * BigInt(priceUsd);
-    await record.save(); 
-
-    //logger.info(`timestamp ${event.block.timestamp.getTime()}, era ${era.toHuman()}, result ${tvl}`)
+    await record.save();
 }
 
 async function checkIsEnableIndividualClaim(): Promise<boolean> {
@@ -71,20 +49,18 @@ async function getTvl(era: u32): Promise<Balance> {
     return tvl;
 }
 
-function reduceBalanceToDenom(balance: Balance, decimal: number): bigint {
-    const decPoint = new BN(10).pow(new BN(decimal));
-    const reduced = balance.div(decPoint);
-    return BigInt(reduced.toString());
-};
+
 
 async function getUsdPrice(currency: string): Promise<number> {
     const url = `https://api.coingecko.com/api/v3/simple/price?ids=${currency}&vs_currencies=usd`;
     // Memo. Using superagent library since axios is giving me the error 'TypeError: adapter is not a function' 
     //const result = await (await fetch(url)).json() //await axios.get(url);
-    const result = await superagent.get(url);
-    const price = result[currency].usd;
+    // const result = await superagent.get(url);
+    // const price = result[currency].usd;
   
-    return Number(price);
+    // return Number(price);
+
+    return 2;
 };
 
 interface EraRewardAndStake extends Struct {

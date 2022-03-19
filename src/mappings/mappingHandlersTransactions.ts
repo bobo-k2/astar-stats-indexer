@@ -1,0 +1,41 @@
+import {SubstrateBlock} from "@subql/types";
+import { TransactionsPerBlock } from "../types";
+import { getBlockTimestampInUnix } from "./utils";
+
+export async function handleBlock(block: SubstrateBlock): Promise<void> {
+    const transactions = await handleDayStartEnd(block);
+
+    transactions.numberOfTransactions += block.block.extrinsics.length;
+    await transactions.save();
+}
+
+async function handleDayStartEnd(block: SubstrateBlock): Promise<TransactionsPerBlock> {
+  const date = formatDate(block.timestamp);
+
+  let transactions = await TransactionsPerBlock.get(date);
+  if (!transactions) {
+    transactions = new TransactionsPerBlock(date);
+    transactions.firstBlock = block.block.header.number.toNumber();
+    transactions.numberOfTransactions = 0;
+    transactions.timestamp = BigInt(0);
+    await transactions.save();
+
+    const prevDate = new Date(block.timestamp);
+    prevDate.setDate(prevDate.getDate() - 1);
+    const prevTransactions = await TransactionsPerBlock.get(formatDate(prevDate));
+    if (prevTransactions) {
+      prevTransactions.lastBlock = transactions.firstBlock - 1;
+      const blocksCount = prevTransactions.lastBlock.valueOf() - prevTransactions.firstBlock;
+      const avgNumberOfTransactions = prevTransactions.numberOfTransactions / blocksCount;
+      prevTransactions.avgNumberOfTransactions = avgNumberOfTransactions;
+      prevTransactions.timestamp = getBlockTimestampInUnix(block);
+      await prevTransactions.save();
+    }
+  }
+
+  return transactions;
+}
+
+function formatDate(date: Date): string {
+  return date.toISOString().slice(0,10).replace(/-/g, '');
+}
