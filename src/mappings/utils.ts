@@ -16,10 +16,13 @@ export function getBlockTimestampInUnix(block: SubstrateBlock): bigint {
 /**
  * Uses coin gecko API to a token price in USD
  * @param token Token name
+ * @param date Price date
  * @returns Token price
  */
-export async function getUsdPrice(token: string): Promise<number> {
-    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${token}&vs_currencies=usd`;
+export async function getUsdPrice(token: string, date: Date): Promise<number> {
+    // const url = `https://api.coingecko.com/api/v3/simple/price?ids=${token}&vs_currencies=usd`;
+    const url = `https://api.coingecko.com/api/v3/coins/${token}/history?date=${formatDate(date)}`;
+    logger.info(url);
     return new Promise((resolve, reject) => {
       https.get(url, res => {
         res.setEncoding('utf8');
@@ -31,13 +34,16 @@ export async function getUsdPrice(token: string): Promise<number> {
     
         res.on('end', ()=> {
             const json = JSON.parse(body);
-            return resolve(Number(json[token].usd));
+            return resolve(Number(json.market_data.current_price.usd));
         });
 
         res.on('error', error => {
           return reject(error);
-
         });
       });
     });
 };
+
+function formatDate(date: Date) {
+  return `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+}

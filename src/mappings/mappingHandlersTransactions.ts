@@ -7,8 +7,6 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
 
     transactions.numberOfTransactions += block.block.extrinsics.length;
     await transactions.save();
-
-    await getUsdPrice('astar');
 }
 
 async function handleDayStartEnd(block: SubstrateBlock): Promise<TransactionsPerBlock> {

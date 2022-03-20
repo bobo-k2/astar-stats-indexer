@@ -10,13 +10,14 @@ export async function handleNewStakingEraEvent(event: SubstrateEvent): Promise<v
     const era = await api.query.dappsStaking.currentEra<u32>();
     const [tvl, priceUsd] = await Promise.all([
         getTvl(era),
-        getUsdPrice('astar')
+        getUsdPrice('astar', event.block.timestamp)
     ])
 
     const record = new Tvl(era.toString());
     record.timestamp = getBlockTimestampInUnix(event.block);
     record.tvl =  reduceBalanceToDenom(tvl, decimals);
-    record.tvlUsd = record.tvl * BigInt(priceUsd);
+    record.tvlUsd = Number(record.tvl) * priceUsd;
+    record.price = priceUsd;
     await record.save();
 }
 

@@ -5,7 +5,9 @@ type Tvl @entity {
 
   tvl: BigInt!
 
-  tvlUsd: BigInt
+  price: Float
+
+  tvlUsd: Float
 }
 
 type TransactionsPerBlock @entity {
