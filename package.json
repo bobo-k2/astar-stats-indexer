@@ -32,6 +32,6 @@
   },
   "dependencies": {
     "bn.js": "^5.2.0",
-    "node-fetch": "^3.2.3"
+    "got": "^12.0.2"
   }
 }

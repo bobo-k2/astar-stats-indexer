@@ -3,7 +3,7 @@ import { Option, Struct } from '@polkadot/types-codec';
 import { Balance } from '@polkadot/types/interfaces';
 import { u32 } from '@polkadot/types';
 import { Tvl } from "../types";
-import { getBlockTimestampInUnix, reduceBalanceToDenom } from './utils';
+import { getBlockTimestampInUnix, reduceBalanceToDenom, getUsdPrice } from './utils';
 
 export async function handleNewStakingEraEvent(event: SubstrateEvent): Promise<void> {
     const decimals = api.registry.chainDecimals[0];
@@ -48,20 +48,6 @@ async function getTvl(era: u32): Promise<Balance> {
 
     return tvl;
 }
-
-
-
-async function getUsdPrice(currency: string): Promise<number> {
-    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${currency}&vs_currencies=usd`;
-    // Memo. Using superagent library since axios is giving me the error 'TypeError: adapter is not a function' 
-    //const result = await (await fetch(url)).json() //await axios.get(url);
-    // const result = await superagent.get(url);
-    // const price = result[currency].usd;
-  
-    // return Number(price);
-
-    return 2;
-};
 
 interface EraRewardAndStake extends Struct {
     rewards: Balance,
