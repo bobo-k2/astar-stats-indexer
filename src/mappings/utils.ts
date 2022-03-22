@@ -1,7 +1,7 @@
 import { SubstrateBlock } from '@subql/types';
 import { Balance } from '@polkadot/types/interfaces';
 import BN from 'bn.js';
-const https = require('https');
+import https from 'https';
 
 export function reduceBalanceToDenom(balance: Balance, decimal: number): bigint {
   const decPoint = new BN(10).pow(new BN(decimal));
