@@ -22,5 +22,5 @@ dataSources:
           filter:
             module: dappsStaking
             method: NewDappStakingEra
-        # - handler: handleBlock
-        #   kind: substrate/BlockHandler
+        - handler: handleBlock
+          kind: substrate/BlockHandler
