@@ -2,7 +2,7 @@ import {SubstrateBlock} from "@subql/types";
 import { TransactionsPerBlock } from "../types";
 import { getBlockTimestampInUnix, getUsdPrice } from "./utils";
 
-const extrinsicsToCount = ['balances.transfer', 'ethCall.call', 'evm.call'];
+const extrinsicsToCount = ['ethCall.call', 'evm.call', 'ehtereum.transact'];
 
 export async function handleBlock(block: SubstrateBlock): Promise<void> {
     const transactions = await handleDayStartEnd(block);
@@ -12,7 +12,9 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
       const { isSigned, method: { method, section } } = ex;
       const extrinsic = `${section}.${method}`;
 
-      if (extrinsicsToCount.includes(extrinsic) || extrinsic.startsWith('dappsStaking.')) {
+      // Filter extrinsics that we are going to count as transaction.
+      // Our transactions count will be different than Subscan transfer count since Subscan counts only extrinsics that contains Balances.Transfer event.
+      if (extrinsicsToCount.includes(extrinsic) || extrinsic.startsWith('dappsStaking.') || extrinsic.startsWith('balances.')) {
         transactionsInBlock ++;
       }
     });
