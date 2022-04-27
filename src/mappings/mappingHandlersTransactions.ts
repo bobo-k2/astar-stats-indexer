@@ -1,4 +1,4 @@
-import {SubstrateBlock} from "@subql/types";
+import { SubstrateBlock, SubstrateEvent } from "@subql/types";
 import { TransactionsPerBlock } from "../types";
 import { getBlockTimestampInUnix, getUsdPrice } from "./utils";
 
@@ -20,6 +20,12 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
     });
 
     transactions.numberOfTransactions += transactionsInBlock;
+    await transactions.save();
+}
+
+export async function handleBalancesTransfer(event: SubstrateEvent): Promise<void> {
+    const transactions = await handleDayStartEnd(event.block);
+    transactions.numberOfTransactions ++;
     await transactions.save();
 }
 
